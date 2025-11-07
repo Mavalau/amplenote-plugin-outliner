@@ -7,18 +7,23 @@
     "build": "node esbuild.js",
     "build:typescript": "tsc && node esbuild.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix",
-    "format": "prettier --write 'src/**/*.ts'",
-    "prettier:fix": "prettier --write 'src/**/*.ts'"
+    "test:unit": "jest",
+    "test:env:ci": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
+    "lint": "eslint --ext .ts src",
+    "lint:fix": "eslint --ext .ts src --fix",
+    "format": "prettier --check src/**/*.ts",
+    "format:fix": "prettier --write src/**/*.ts"
   },
   "author": "@mavalau",
   "license": "MIT",
   "testEnvironment": "jsdom",
   "type": "module",
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.19.24",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
     "dotenv": "^17.2.3",
     "esbuild": "0.17.15",
     "eslint": "^9.39.1",
@@ -28,6 +33,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "prettier": "^3.6.2",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3"
   }
 }
