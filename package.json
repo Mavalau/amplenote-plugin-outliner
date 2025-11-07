@@ -5,7 +5,7 @@
   "main": "lib/plugin.js",
   "scripts": {
     "build": "node esbuild.js",
-    "build:typescript": "tsc && node esbuild.js",
+    "build:ts": "tsc && node esbuild.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit": "jest",
     "test:env:ci": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
