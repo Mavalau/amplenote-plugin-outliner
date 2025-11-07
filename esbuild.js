@@ -4,7 +4,7 @@ import esbuild from "esbuild"
 dotenv.config();
 
 const result = await esbuild.build({
-  entryPoints: [`lib/plugin.js`],
+  entryPoints: [`src/plugin.ts`],
   bundle: true,
   format: "iife",
   outfile: "build/compiled.js",
