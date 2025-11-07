@@ -18,7 +18,7 @@ jobs:
       - name: Install deps
         run: npm ci || true
       - name: Build
-        run: node build.js
+        run: npm run build
       - name: Run tests
         run: npm test
       - name: Lint
