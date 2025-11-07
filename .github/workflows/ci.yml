@@ -20,8 +20,8 @@ jobs:
       - name: Build
         run: npm run build
       - name: Run tests
-        run: npm test
+        run: npm run test:env:ci
       - name: Lint
         run: npm run lint
       - name: Format Check
-        run: prettier --check 'src/**/*.ts'
+        run: npm run format
