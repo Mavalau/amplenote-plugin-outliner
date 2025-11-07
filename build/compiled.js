@@ -1,6 +1,5 @@
-"use strict";
 (() => {
-  // lib/plugin.js
+  // src/plugin.ts
   var plugin = {
     // --------------------------------------------------------------------------------------
     constants: {},
@@ -16,7 +15,9 @@
           return /cool/i.test(noteContent.toLowerCase());
         },
         run: async function(app, noteUUID) {
-          await app.alert("You clicked the Baby's first Note Option command in a COOL note!");
+          await app.alert(
+            "You clicked the Baby's first Note Option command in a COOL note!"
+          );
           console.debug("Special message to the DevTools console");
         }
       }

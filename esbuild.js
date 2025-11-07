@@ -12,4 +12,4 @@ const result = await esbuild.build({
   platform: "node",
   write: true,
 });
-console.log("Result was", result)
+console.log("Build result", result)
