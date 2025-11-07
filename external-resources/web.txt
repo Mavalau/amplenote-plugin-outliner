@@ -1,0 +1,3 @@
+
+https://www.amplenote.com/help/guide_to_developing_amplenote_plugins
+https://assets.amplenote.com/help/developing_amplenote_plugins

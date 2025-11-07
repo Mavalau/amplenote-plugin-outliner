@@ -1,4 +1,28 @@
-.idea
-node_modules/
 .env
-.DS_Store
+.history/
+
+# Node.js dependencies
+node_modules/
+
+# TypeScript build output
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Environment variables
+.env
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build artifacts
+build/
+lib/
