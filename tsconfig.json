@@ -3,11 +3,11 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",
-    "strict": true,
+    "strict": false, // We can not use strict mode as this will break the IIFE Format expected by Amplenote Plugin Builder
     "esModuleInterop": true,
     "outDir": "lib",
     "rootDir": "src",
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

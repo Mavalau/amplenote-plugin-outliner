@@ -30,6 +30,8 @@ export default defineConfig(
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+
+      "@typescript-eslint/prefer-nullish-coalescing": "off", // Disabled because we cannot use "strict" mode in tsconfig.json
     },
   },
 
