@@ -1,5 +1,5 @@
 export function styleTemplate() {
-  return /*css*/`
+  return /*css*/ `
 :root {
   --radius: 10px;
   --pad: 8px;

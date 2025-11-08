@@ -10,6 +10,6 @@ export type Section = {
     href?: string;
     level: 1 | 2 | 3;
     text: string;
-  },
+  };
   index?: number;
 };

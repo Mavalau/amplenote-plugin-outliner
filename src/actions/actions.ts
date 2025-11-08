@@ -1,6 +1,6 @@
-import { App } from "../typing/amplenote-plugin-types";
-import { assertNoteContext, getCurrentNoteUUIDFromUrl } from "../utils/note";
-import { getColorMode, getPollingInterval } from "../config/settings";
+import { App } from '../typing/amplenote-plugin-types';
+import { assertNoteContext, getCurrentNoteUUIDFromUrl } from '../utils/note';
+import { getColorMode, getPollingInterval } from '../config/settings';
 
 // https://www.amplenote.com/help/developing_amplenote_plugins#app.openSidebarEmbed
 // We cannot really control the height of the Peek Viewer pane (total iFrame),
@@ -13,7 +13,7 @@ function calcAspectRatio(): number {
 }
 
 export const noteOption = {
-  "Open ToC in Sidebar": {
+  'Open ToC in Sidebar': {
     check(app: App, noteUUID: string): boolean {
       return assertNoteContext(noteUUID);
     },
@@ -22,35 +22,35 @@ export const noteOption = {
       const pollingInterval = getPollingInterval(app);
       const aspectRatio = calcAspectRatio();
       await app.openSidebarEmbed(
-        { id: "Table of Contents", aspectRatio },
+        { id: 'Table of Contents', aspectRatio },
         noteUUID,
         colorMode,
-        pollingInterval
+        pollingInterval,
       );
-    }
-  }
+    },
+  },
 };
 
 export const appOption = {
-  "Open ToC in Sidebar": {
+  'Open ToC in Sidebar': {
     check(app: App): boolean {
       return true; // We handle the case when there is no noteUUID later
     },
     async run(app: App): Promise<void> {
-      const url = app.context?.url || "";
+      const url = app.context?.url || '';
       const noteUUID = getCurrentNoteUUIDFromUrl(url);
 
       const colorMode = getColorMode(app);
       const pollingInterval = getPollingInterval(app);
       const aspectRatio = calcAspectRatio();
       await app.openSidebarEmbed(
-        { id: "Table of Contents", aspectRatio },
+        { id: 'Table of Contents', aspectRatio },
         noteUUID,
         colorMode,
-        pollingInterval
+        pollingInterval,
       );
-    }
-  }
+    },
+  },
 };
 
 //TODO:

@@ -1,6 +1,6 @@
-import { noteOption, appOption } from "./actions/actions";
-import { onEmbedCall } from "./embedCallHandler/onEmbedCall";
-import { renderEmbed } from "./rendering/embed";
+import { noteOption, appOption } from './actions/actions';
+import { onEmbedCall } from './embedCallHandler/onEmbedCall';
+import { renderEmbed } from './rendering/embed';
 
 const plugin = {
   /*
@@ -13,7 +13,7 @@ const plugin = {
    * Rendering
    */
   onEmbedCall,
-  renderEmbed
+  renderEmbed,
 };
 
 export default plugin;
