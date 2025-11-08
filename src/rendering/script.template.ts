@@ -137,7 +137,16 @@ export function scriptTemplate({
         if (!row || !uuid) return;
         const anchor = row.dataset.anchor;
         if (!anchor) return;
-        if (row.tagName.toLowerCase() === "summary") e.preventDefault(); // Do not Collapse/Expand
+
+        const isSummary = row.tagName.toLowerCase() === "summary";
+
+        // If it's a summary, only navigate on Ctrl/Cmd+Click
+        if (isSummary) {
+          if (!e.ctrlKey && !e.metaKey) return;
+          e.preventDefault(); // Prevent collapse/expand
+        }
+
+        // Always navigate if it's a leaf
         await window.callAmplenotePlugin("navigateToHeading", { uuid, anchor });
       });
       tocEl._navBound = true;

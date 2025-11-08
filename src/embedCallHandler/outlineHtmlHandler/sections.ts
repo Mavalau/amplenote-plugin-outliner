@@ -64,6 +64,16 @@ function buildCollapsibleOutlineHtml(sections: SectionFlat[], maxOpenLevel = 6):
 
     const hasChildren = !isLast && nextLevel > level;
 
+    //TODO: Will cause a bug:
+    //Steps to reproduce:
+    //1. Have note with "Heading1" directly followed by "Heading3"
+    //2. Set Max level to "2"
+    //Expected behaviour:
+    //- "Heading3" is not shown anymore
+    //Actual behaviour:
+    //- "Heading3" is still shown
+    //Explanation:
+    //We just open level 1 without making sure that things directly inside can be much lower level
     const openAttrHtml = level < maxOpenLevel ? " open" : "";
     
     const textHtml = text === emptyHeadingText ? "<em>[untitled]</em>" : escapeHtml(text);
