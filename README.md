@@ -19,6 +19,8 @@ Show an Outline of your Note in the Peek Viewer side pane.
 
 * Use proper frontend framework (https://github.com/alloy-org/amplenote-embed-starter)
 
+## Development
+
 ## Reference
 
 * [Amplenote: Guide to Building/Developing Plugins (Beginner to Advanced)](https://www.amplenote.com/help/guide_to_developing_amplenote_plugins)
@@ -35,7 +37,7 @@ Show an Outline of your Note in the Peek Viewer side pane.
 #### AI Usage
 
 * Development has been assisted by AI
-* AI contributed code, but all of it has been reviewed by a human.
+* AI contributed code (especially for "frontend"), but all of it has been reviewed by a human.
 
 ### Final Words
 
