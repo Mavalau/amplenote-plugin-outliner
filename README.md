@@ -3,6 +3,8 @@
 _Plugin for the amazing [Amplenote](https://www.amplenote.com/)._
 Show an Outline of your Note in the Peek Viewer side pane.
 
+More information on the [Plugin Note](https://public.amplenote.com/q7AbQNHyupxuKVS7kfXWqDAi)
+
 ![Screenhsot showcasing plugin](doc/image.png)
 
 ## Usage
