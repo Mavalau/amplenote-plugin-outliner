@@ -1,4 +1,4 @@
-import { escape as escapeHtml } from "lodash";
+import { escape as escapeHtml } from "../../utils/lodash";
 
 import { App, Section } from "../../typing/amplenote-plugin-types";
 import { assertNoteContext } from "../../utils/note";

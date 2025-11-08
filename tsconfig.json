@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@src/*": ["src/*"], //TODO: Currently not used as we'd need to handle it in esbuild as well.
+    },
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",

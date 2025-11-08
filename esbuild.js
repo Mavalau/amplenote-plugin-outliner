@@ -8,8 +8,10 @@ const result = await esbuild.build({
   bundle: true,
   format: "iife",
   outfile: "build/compiled.js",
-  packages: "external",
+  //packages: "external", //TODO: In general, using external packages gives problems.
+  legalComments: "inline", // Keep inline, because "eof" would break Amplenote Plugin Builder
   platform: "node",
   write: true,
 });
+
 console.log("Build result", result)
