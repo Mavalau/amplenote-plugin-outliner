@@ -93,5 +93,6 @@ export async function outlineHtml(app: App, noteUUID: string, maxOpenLevel = 6) 
 
     const sections = await fetchSections(app, noteUUID);
     const html = sections.length ? buildCollapsibleOutlineHtml(sections, maxOpenLevel) : "<em>[No Sections]</em>";
+    console.log(html);
     return { noteUUID, html };
 }

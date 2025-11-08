@@ -1,7 +1,5 @@
-import { html } from 'lit';
-
 export function scriptTemplate({ initUUID, pollMs }: { initUUID: string ; pollMs: number }) {
-  return html`
+  return /*html*/`
   <script>
   (async () => {
     /*
@@ -42,7 +40,7 @@ export function scriptTemplate({ initUUID, pollMs }: { initUUID: string ; pollMs
      */
     maxInp.value = String(getSavedMax());
 
-    let uuid = ${initUUID};
+    let uuid = "${initUUID}";
     let lastUUID = uuid, lastHTML = "";
 
     async function load(force=false){

@@ -1,7 +1,5 @@
-import { html } from 'lit';
-
 export function bodyTemplate({ colorMode }: { colorMode: string }) {
-  return html`
+  return /*html*/`
 <div id="toc-root" data-color-mode="${colorMode}">
   <div class="toolbar">
     <div class="left">
