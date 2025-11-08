@@ -18,12 +18,13 @@ export async function onEmbedCall(this: any, app: App, type: string, arg: any): 
   }
 
   if (type === "navigateToHeading") {
-    const { uuid, heading }: { uuid: string; heading: string } = arg || {};
+    const { uuid, anchor }: { uuid: string; anchor: string } = arg || {};
     //TODO: Validation
-    if (!uuid || !heading) return false;
+    if (!uuid || !anchor) return false;
 
     const base: string = await app.getNoteURL({ uuid });
-    const targetUrl: string = `${base}#${encodeURIComponent(heading)}`;
+    const targetUrl: string = `${base}#${encodeURIComponent(anchor)}`;
+    console.log(`Heading to: ${targetUrl}`);
     await app.navigate(targetUrl);
     return true;
   }

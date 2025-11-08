@@ -78,7 +78,7 @@ function buildCollapsibleOutlineHtml(sections: SectionFlat[], maxOpenLevel = 6):
       );
       openStack.push(level);
     } else {
-      html.push(`<div class="leaf lvl-${level}"${dataHeadingAttr}>${text}</div>`);
+      html.push(`<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${text}</div>`);
     }
   }
 
