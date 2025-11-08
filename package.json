@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node esbuild.js",
     "build:ts": "tsc && node esbuild.js",
+    "build:manual": "node esbuild.js && node scripts/build-manual.mjs build/compiled.js out/compiled-manual.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit": "jest",
     "test:env:ci": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
@@ -18,9 +19,12 @@
   "license": "MIT",
   "testEnvironment": "jsdom",
   "type": "module",
+  "dependencies": {
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/jest": "^29.5.0",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^20.19.24",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
