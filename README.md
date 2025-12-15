@@ -19,9 +19,11 @@ More information on the [Plugin Note](https://public.amplenote.com/q7AbQNHyupxuK
 
 ## Roadmap
 
-* Use proper frontend framework (https://github.com/alloy-org/amplenote-embed-starter)
+* Use proper frontend framework as hinted by the [Amplenote Plugin Started Pack](https://github.com/alloy-org/amplenote-embed-starter)
 
 ## Development
+
+* `npm run build` (will also be executed as Github Action)
 
 ## Reference
 
