@@ -28,7 +28,9 @@ export async function onEmbedCall(
     if (!uuid || !anchor) return false;
 
     const base: string = await app.getNoteURL({ uuid });
-    const targetUrl = `${base}#${encodeURIComponent(anchor)}`;
+    const linkUrl = new URL(base);
+    linkUrl.hash = anchor;
+    const targetUrl = linkUrl.toString();
     console.log(`Heading to: ${targetUrl}`);
     await app.navigate(targetUrl);
     return true;

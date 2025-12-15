@@ -1,7 +1,9 @@
 (() => {
   // src/utils/note.ts
   function getCurrentNoteUUIDFromUrl(url) {
-    const extractedUUID = /\/notes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(url);
+    const extractedUUID = /\/notes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(
+      url
+    );
     return extractedUUID ? extractedUUID[1] : null;
   }
   function assertNoteContext(noteUUID) {
@@ -70,7 +72,7 @@
 
   // src/utils/lodash.ts
   function escape(input) {
-    const s = String(input ?? "");
+    const s = String(JSON.stringify(input) ?? "");
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
@@ -97,10 +99,10 @@
     return processedSections;
   }
   function buildCollapsibleOutlineHtml(sections, maxOpenLevel = 6) {
-    if (!sections || !sections.length)
+    if (!sections?.length)
       return "";
-    let html = [];
-    let openStack = [];
+    const html = [];
+    const openStack = [];
     const closeUntil = (targetLevel) => {
       while (openStack.length && openStack[openStack.length - 1] >= targetLevel) {
         html.push("</div></details>");
@@ -123,7 +125,9 @@
         );
         openStack.push(level);
       } else {
-        html.push(`<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${text}</div>`);
+        html.push(
+          `<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${text}</div>`
+        );
       }
     }
     closeUntil(1);
@@ -161,7 +165,9 @@
       if (!uuid || !anchor)
         return false;
       const base = await app.getNoteURL({ uuid });
-      const targetUrl = `${base}#${encodeURIComponent(anchor)}`;
+      const linkUrl = new URL(base);
+      linkUrl.hash = anchor;
+      const targetUrl = linkUrl.toString();
       console.log(`Heading to: ${targetUrl}`);
       await app.navigate(targetUrl);
       return true;
@@ -622,12 +628,15 @@
   }
 
   // src/rendering/embed.ts
-  async function renderEmbed(app, ...args) {
+  function renderEmbed(app, ...args) {
     const initialUUID = args[0];
     const colorMode = args[1];
     const pollingIntervalMs = args[2];
     const body = bodyTemplate({ colorMode });
-    const script = scriptTemplate({ initUUID: initialUUID, pollMs: pollingIntervalMs });
+    const script = scriptTemplate({
+      initUUID: initialUUID,
+      pollMs: pollingIntervalMs
+    });
     const styles = styleTemplate();
     return `
 ${body}
