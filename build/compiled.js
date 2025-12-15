@@ -70,9 +70,11 @@
     }
   };
 
-  // src/utils/lodash.ts
+  // src/utils/lodash-impl.ts
   function escape(input) {
-    const s = String(JSON.stringify(input) ?? "");
+    if (typeof input !== "string")
+      return "";
+    const s = String(input ?? "");
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
