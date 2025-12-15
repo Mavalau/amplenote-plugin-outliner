@@ -9,10 +9,10 @@ More information on the [Plugin Note](https://public.amplenote.com/q7AbQNHyupxuK
 
 ## Usage
 
-1. Install via [Amplenote Plugin Directory](https://www.amplenote.com/plugins).
-2. See Plugin-Note for further instructions.
+1. Install via [Amplenote Plugin Directory](https://www.amplenote.com/plugins/q7AbQNHyupxuKVS7kfXWqDAi).
+2. See [Amplenote Plugin Directory](https://www.amplenote.com/plugins/q7AbQNHyupxuKVS7kfXWqDAi) or Plugin-Note for further instructions.
 
-## Highlights
+## Features (Highlights)
 
 * Collapse deeply nested sections
 * Jump to heading
