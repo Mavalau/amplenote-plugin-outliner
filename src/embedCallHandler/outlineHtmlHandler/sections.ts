@@ -1,7 +1,9 @@
 import { escape as escapeHtml } from '../../utils/lodash-impl';
 
 import { App, Section } from '../../typing/amplenote-plugin-types';
-import { assertNoteContext } from '../../utils/note';
+import { assertNoteContext, getDailyJotUuid } from '../../utils/note';
+import { getShowDailyJotToc } from '../../config/settings';
+import { isViewingDailyJots } from '../../utils/navigation';
 
 type SectionFlat = {
   anchor?: Section['heading']['anchor'];
@@ -110,15 +112,24 @@ export async function outlineHtml(
   noteUUID: string,
   maxOpenLevel = 6,
 ) {
-  if (!assertNoteContext(noteUUID)) {
-    return { noteUUID: null, html: '' };
+  let effectiveUUID = noteUUID;
+  if (!assertNoteContext(effectiveUUID)) {
+    const showDaily = getShowDailyJotToc(app);
+    if (!showDaily || !isViewingDailyJots(app)) {
+      return { noteUUID: null, html: '' };
+    }
+    const dailyUUID = await getDailyJotUuid(app);
+    if (!dailyUUID) {
+      return { noteUUID: null, html: '' };
+    }  
+    effectiveUUID = dailyUUID;
   }
 
-  const sections = await fetchSections(app, noteUUID);
+  const sections = await fetchSections(app, effectiveUUID);
 
   let noteTitle = '';
   try {
-    const note = await app.notes.find(noteUUID);
+    const note = await app.notes.find(effectiveUUID); // const noteHandle = await app.findNote({ uuid: noteUUID });
     noteTitle = note?.name || '';
   } catch (e) {
     noteTitle = '';
@@ -134,5 +145,5 @@ export async function outlineHtml(
 
   const html = `${titleHtml}${bodyHtml}`;
   console.log(html);
-  return { noteUUID, html };
+  return { noteUUID: effectiveUUID, html };
 }

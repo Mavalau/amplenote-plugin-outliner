@@ -13,6 +13,17 @@
     }
     return true;
   }
+  async function getDailyJotUuid(app) {
+    try {
+      const todayTimestamp = Math.floor(Date.now() / 1e3);
+      const todayJot = await app.notes.dailyJot(todayTimestamp);
+      const resolvedUUID = todayJot?.uuid;
+      return resolvedUUID;
+    } catch (e) {
+      console.log("getDailyJotUUID: failed to fetch daily jot", e);
+      return null;
+    }
+  }
 
   // src/config/settings.ts
   function getColorMode(app) {
@@ -25,6 +36,10 @@
     const pollingIntervalMsNum = Number(pollingIntervalMs);
     const defaultPollingIntervalMs = 1e3;
     return isFinite(pollingIntervalMsNum) && pollingIntervalMsNum > 0 ? pollingIntervalMsNum : defaultPollingIntervalMs;
+  }
+  function getShowDailyJotToc(app) {
+    const raw = app?.settings?.["show-daily-jot-toc"];
+    return String(raw).toLowerCase() === "true";
   }
 
   // src/actions/actions.ts
@@ -76,6 +91,12 @@
       return "";
     const s = String(input ?? "");
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  // src/utils/navigation.ts
+  function isViewingDailyJots(app) {
+    const url = String(app?.context?.url || "");
+    return /\/notes\/jots\b/i.test(url);
   }
 
   // src/embedCallHandler/outlineHtmlHandler/sections.ts
@@ -136,13 +157,22 @@
     return html.join("");
   }
   async function outlineHtml(app, noteUUID, maxOpenLevel = 6) {
-    if (!assertNoteContext(noteUUID)) {
-      return { noteUUID: null, html: "" };
+    let effectiveUUID = noteUUID;
+    if (!assertNoteContext(effectiveUUID)) {
+      const showDaily = getShowDailyJotToc(app);
+      if (!showDaily || !isViewingDailyJots(app)) {
+        return { noteUUID: null, html: "" };
+      }
+      const dailyUUID = await getDailyJotUuid(app);
+      if (!dailyUUID) {
+        return { noteUUID: null, html: "" };
+      }
+      effectiveUUID = dailyUUID;
     }
-    const sections = await fetchSections(app, noteUUID);
+    const sections = await fetchSections(app, effectiveUUID);
     let noteTitle = "";
     try {
-      const note = await app.notes.find(noteUUID);
+      const note = await app.notes.find(effectiveUUID);
       noteTitle = note?.name || "";
     } catch (e) {
       noteTitle = "";
@@ -151,7 +181,7 @@
     const bodyHtml = sections.length ? buildCollapsibleOutlineHtml(sections, maxOpenLevel) : "<em>[No Sections]</em>";
     const html = `${titleHtml}${bodyHtml}`;
     console.log(html);
-    return { noteUUID, html };
+    return { noteUUID: effectiveUUID, html };
   }
 
   // src/config/pluginState.ts
@@ -170,6 +200,18 @@
         return;
       }
       return getCurrentNoteUUIDFromUrl(currentUrl);
+    }
+    if (type === "appContextUrl") {
+      return app.context?.url || null;
+    }
+    if (type === "getShowDailyJotToc") {
+      return getShowDailyJotToc(app);
+    }
+    if (type === "dailyJotUuid") {
+      return await getDailyJotUuid(app);
+    }
+    if (type === "isViewingDailyJots") {
+      return isViewingDailyJots(app);
     }
     if (type === "navigateToHeading") {
       const { uuid, anchor } = arg || {};
@@ -496,7 +538,16 @@
 
     async function fetchCurrentUUID(){
       const newUUID = await window.callAmplenotePlugin("currentNoteUUID");
-      uuid = newUUID || null;
+       if (newUUID) { uuid = newUUID || null; return; }
+
+      // No note selected \u2014 perform client-side checks and only then
+      // request the daily jot UUID from the host.
+      const showDaily = await window.callAmplenotePlugin("getShowDailyJotToc");
+      const inJotsView = await window.callAmplenotePlugin("isViewingDailyJots");
+      if (!showDaily || !inJotsView) { uuid = null; return; }
+
+      const dailyUUID = await window.callAmplenotePlugin("dailyJotUuid");
+      uuid = dailyUUID || null;
     }
 
     /*

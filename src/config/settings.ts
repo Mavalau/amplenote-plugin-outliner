@@ -15,3 +15,8 @@ export function getPollingInterval(app: App): number {
     ? pollingIntervalMsNum
     : defaultPollingIntervalMs;
 }
+
+export function getShowDailyJotToc(app: App): boolean {
+  const raw = app?.settings?.['show-daily-jot-toc'];
+  return String(raw).toLowerCase() === 'true';
+}

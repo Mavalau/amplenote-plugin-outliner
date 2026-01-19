@@ -1,3 +1,5 @@
+import { App } from '../typing/amplenote-plugin-types';
+
 /**
  * Extracts the current note UUID from a given URL.
  */
@@ -15,4 +17,16 @@ export function assertNoteContext(noteUUID: string) {
     return false;
   }
   return true;
+}
+
+export async function getDailyJotUuid(app: App): Promise<string | null> {
+  try {
+    const todayTimestamp = Math.floor(Date.now() / 1000);
+    const todayJot = await app.notes.dailyJot(todayTimestamp);
+    const resolvedUUID = todayJot?.uuid;
+    return resolvedUUID;
+  } catch (e) {
+    console.log('getDailyJotUUID: failed to fetch daily jot', e);
+    return null;
+  }
 }
