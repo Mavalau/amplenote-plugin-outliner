@@ -1,14 +1,16 @@
 import { escape as escapeHtml } from '../../utils/lodash-impl';
 
 import { App, Section } from '../../typing/amplenote-plugin-types';
-import { assertNoteContext } from '../../utils/note';
+import { assertNoteContext, getDailyJotUuid } from '../../utils/note';
+import { getShowDailyJotToc } from '../../config/settings';
+import { isViewingDailyJots } from '../../utils/navigation';
 
-type SectionFlat = {
+interface SectionFlat {
   anchor?: Section['heading']['anchor'];
   level: Section['heading']['level'];
   text: Section['heading']['text'];
   index?: Section['index'];
-};
+}
 
 const emptyHeadingText = '[untitled]';
 /**
@@ -96,7 +98,7 @@ function buildCollapsibleOutlineHtml(
       openStack.push(level);
     } else {
       html.push(
-        `<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${text}</div>`,
+        `<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${textHtml}</div>`,
       );
     }
   }
@@ -110,14 +112,38 @@ export async function outlineHtml(
   noteUUID: string,
   maxOpenLevel = 6,
 ) {
-  if (!assertNoteContext(noteUUID)) {
-    return { noteUUID: null, html: '' };
+  let effectiveUUID = noteUUID;
+  if (!assertNoteContext(effectiveUUID)) {
+    const showDaily = getShowDailyJotToc(app);
+    if (!showDaily || !isViewingDailyJots(app)) {
+      return { noteUUID: null, html: '' };
+    }
+    const dailyUUID = await getDailyJotUuid(app);
+    if (!dailyUUID) {
+      return { noteUUID: null, html: '' };
+    }
+    effectiveUUID = dailyUUID;
   }
 
-  const sections = await fetchSections(app, noteUUID);
-  const html = sections.length
+  const sections = await fetchSections(app, effectiveUUID);
+
+  let noteTitle = '';
+  try {
+    const note = await app.notes.find(effectiveUUID); // const noteHandle = await app.findNote({ uuid: noteUUID });
+    noteTitle = note?.name || '';
+  } catch (_e) {
+    noteTitle = '';
+  }
+
+  const titleHtml = noteTitle
+    ? `<div class="note-title">${escapeHtml(noteTitle)}</div>`
+    : '';
+
+  const bodyHtml = sections.length
     ? buildCollapsibleOutlineHtml(sections, maxOpenLevel)
     : '<em>[No Sections]</em>';
+
+  const html = `${titleHtml}${bodyHtml}`;
   console.log(html);
-  return { noteUUID, html };
+  return { noteUUID: effectiveUUID, html };
 }

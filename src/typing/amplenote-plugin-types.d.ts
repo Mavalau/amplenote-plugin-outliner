@@ -1,10 +1,8 @@
 //TODO: There is no proper TS typing provided by Amplenote yet.
-export interface App {
-  [key: string]: any;
-}
+export type App = Record<string, any>;
 
 // https://www.amplenote.com/help/developing_amplenote_plugins#section
-export type Section = {
+export interface Section {
   heading: null | {
     anchor: string;
     href?: string;
@@ -12,4 +10,4 @@ export type Section = {
     text: string;
   };
   index?: number;
-};
+}

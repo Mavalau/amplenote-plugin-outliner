@@ -33,7 +33,16 @@ export function scriptTemplate({
 
     async function fetchCurrentUUID(){
       const newUUID = await window.callAmplenotePlugin("currentNoteUUID");
-      uuid = newUUID || null;
+       if (newUUID) { uuid = newUUID || null; return; }
+
+      // No note selected — perform client-side checks and only then
+      // request the daily jot UUID from the host.
+      const showDaily = await window.callAmplenotePlugin("getShowDailyJotToc");
+      const inJotsView = await window.callAmplenotePlugin("isViewingDailyJots");
+      if (!showDaily || !inJotsView) { uuid = null; return; }
+
+      const dailyUUID = await window.callAmplenotePlugin("dailyJotUuid");
+      uuid = dailyUUID || null;
     }
 
     /*

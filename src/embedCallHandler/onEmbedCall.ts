@@ -1,6 +1,8 @@
 import { outlineHtml } from './outlineHtmlHandler/sections';
 import { App } from '../typing/amplenote-plugin-types';
-import { getCurrentNoteUUIDFromUrl } from '../utils/note';
+import { getCurrentNoteUUIDFromUrl, getDailyJotUuid } from '../utils/note';
+import { isViewingDailyJots } from '../utils/navigation';
+import { getShowDailyJotToc } from '../config/settings';
 import pluginState from '../config/pluginState';
 
 /**
@@ -20,6 +22,22 @@ export async function onEmbedCall(
       return;
     }
     return getCurrentNoteUUIDFromUrl(currentUrl);
+  }
+
+  if (type === 'appContextUrl') {
+    return app.context?.url || null;
+  }
+
+  if (type === 'getShowDailyJotToc') {
+    return getShowDailyJotToc(app);
+  }
+
+  if (type === 'dailyJotUuid') {
+    return await getDailyJotUuid(app);
+  }
+
+  if (type === 'isViewingDailyJots') {
+    return isViewingDailyJots(app);
   }
 
   if (type === 'navigateToHeading') {
