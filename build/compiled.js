@@ -128,7 +128,7 @@
         openStack.push(level);
       } else {
         html.push(
-          `<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${text}</div>`
+          `<div class="leaf lvl-${level}"${dataHeadingAttr}${dataAnchorAttr}>${textHtml}</div>`
         );
       }
     }
@@ -140,7 +140,16 @@
       return { noteUUID: null, html: "" };
     }
     const sections = await fetchSections(app, noteUUID);
-    const html = sections.length ? buildCollapsibleOutlineHtml(sections, maxOpenLevel) : "<em>[No Sections]</em>";
+    let noteTitle = "";
+    try {
+      const note = await app.notes.find(noteUUID);
+      noteTitle = note?.name || "";
+    } catch (e) {
+      noteTitle = "";
+    }
+    const titleHtml = noteTitle ? `<div class="note-title">${escape(noteTitle)}</div>` : "";
+    const bodyHtml = sections.length ? buildCollapsibleOutlineHtml(sections, maxOpenLevel) : "<em>[No Sections]</em>";
+    const html = `${titleHtml}${bodyHtml}`;
     console.log(html);
     return { noteUUID, html };
   }
