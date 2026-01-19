@@ -1,9 +1,6 @@
 import { outlineHtml } from './outlineHtmlHandler/sections';
 import { App } from '../typing/amplenote-plugin-types';
-import {
-  getCurrentNoteUUIDFromUrl,
-  getDailyJotUuid,
-} from '../utils/note';
+import { getCurrentNoteUUIDFromUrl, getDailyJotUuid } from '../utils/note';
 import { isViewingDailyJots } from '../utils/navigation';
 import { getShowDailyJotToc } from '../config/settings';
 import pluginState from '../config/pluginState';

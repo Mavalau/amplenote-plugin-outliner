@@ -5,12 +5,12 @@ import { assertNoteContext, getDailyJotUuid } from '../../utils/note';
 import { getShowDailyJotToc } from '../../config/settings';
 import { isViewingDailyJots } from '../../utils/navigation';
 
-type SectionFlat = {
+interface SectionFlat {
   anchor?: Section['heading']['anchor'];
   level: Section['heading']['level'];
   text: Section['heading']['text'];
   index?: Section['index'];
-};
+}
 
 const emptyHeadingText = '[untitled]';
 /**
@@ -121,7 +121,7 @@ export async function outlineHtml(
     const dailyUUID = await getDailyJotUuid(app);
     if (!dailyUUID) {
       return { noteUUID: null, html: '' };
-    }  
+    }
     effectiveUUID = dailyUUID;
   }
 
@@ -131,7 +131,7 @@ export async function outlineHtml(
   try {
     const note = await app.notes.find(effectiveUUID); // const noteHandle = await app.findNote({ uuid: noteUUID });
     noteTitle = note?.name || '';
-  } catch (e) {
+  } catch (_e) {
     noteTitle = '';
   }
 
