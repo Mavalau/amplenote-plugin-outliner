@@ -174,7 +174,7 @@
     try {
       const note = await app.notes.find(effectiveUUID);
       noteTitle = note?.name || "";
-    } catch (e) {
+    } catch (_e) {
       noteTitle = "";
     }
     const titleHtml = noteTitle ? `<div class="note-title">${escape(noteTitle)}</div>` : "";
@@ -241,8 +241,9 @@
       `
 <div id="toc-root" data-color-mode="${colorMode}">
   <div class="toolbar">
-    <div class="left">
-      <div class="control-group">
+    <div class="toolbar-main">
+      <div class="left">
+        <div class="control-group">
         <label class="maxlvl">
           <span>Max level:</span>
           <input id="maxLevel" type="number" min="1" max="3" value="3" /> <!-- default 3 -->
@@ -251,10 +252,24 @@
           <button id="expandAll" class="btn btn-ghost" type="button">Expand all</button>
           <button id="collapseAll" class="btn btn-ghost" type="button">Collapse all</button>
         </span>
+        </div>
+      </div>
+      <div class="right">
+        <button id="refresh" class="btn" type="button">Refresh</button>
       </div>
     </div>
-    <div class="right">
-      <button id="refresh" class="btn" type="button">Refresh</button>
+    <div class="toolbar-search">
+      <label class="search" for="headingSearch">
+        <span class="search-label">Search headings</span>
+        <input
+          id="headingSearch"
+          type="search"
+          placeholder="Find headings"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </label>
+      <span id="searchStatus" class="search-status" aria-live="polite"></span>
     </div>
   </div>
   <div id="toc">Loading...</div>
@@ -318,15 +333,28 @@
    Toolbar
 =================================== */
 .toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   position: sticky;
   top: 0;
   background: linear-gradient(var(--bg) 85%, transparent);
   z-index: 2;
   padding-bottom: 6px;
+}
+
+.toolbar-main {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.toolbar-search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
 }
 
 .left {
@@ -350,13 +378,34 @@
   gap: 6px;
 }
 
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.search input,
 .maxlvl input {
-  width: 52px;
-  padding: 6px 8px;
   color: var(--fg);
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 6px;
+}
+
+.search input {
+  width: 100%;
+  padding: 6px 10px;
+}
+
+.search-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.maxlvl input {
+  width: 52px;
+  padding: 6px 8px;
 }
 
 .toggles {
@@ -367,6 +416,14 @@
 .right {
   display: flex;
   gap: 6px;
+  align-items: center;
+}
+
+.search-status {
+  min-height: 1lh;
+  font-size: 13px;
+  color: var(--muted);
+  align-self: flex-end;
 }
 
 .btn {
@@ -416,8 +473,11 @@
   position: relative;
   box-sizing: border-box;
   padding-left: var(--marker-w);
+  padding-right: 8px;
   user-select: none;
   font-size: inherit;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 #toc summary {
@@ -497,7 +557,20 @@
 #toc .leaf:hover,
 #toc summary:hover {
   background: var(--hover);
-  border-radius: 6px;
+}
+
+#toc .search-match {
+  background: color-mix(in oklab, var(--hover) 55%, #facc15 45%);
+}
+
+#toc .search-match.search-current {
+  outline: 1px solid color-mix(in oklab, var(--fg) 35%, #f59e0b 65%);
+  outline-offset: 0;
+}
+
+#toc.search-active summary:not(.search-match):not(.search-ancestor),
+#toc.search-active .leaf:not(.search-match) {
+  opacity: 0.45;
 }
 `
     );
@@ -522,11 +595,33 @@
     const btnEx  = document.getElementById("expandAll");
     const btnCl  = document.getElementById("collapseAll");
     const maxInp = document.getElementById("maxLevel");
+    const searchInp = document.getElementById("headingSearch");
+    const searchStatusEl = document.getElementById("searchStatus");
 
     /*
      * Utils
      */
     const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
+    const normalizeHeading = (value) =>
+      (value || "")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036F]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+
+    const fuzzyMatch = (query, target) => {
+      if (!query) return true;
+      if (!target) return false;
+      if (target.includes(query)) return true;
+
+      let qIndex = 0;
+      for (let tIndex = 0; tIndex < target.length && qIndex < query.length; tIndex += 1) {
+        if (target[tIndex] === query[qIndex]) qIndex += 1;
+      }
+      return qIndex === query.length;
+    };
 
     const debounce = (fn, ms=300) => {
       let t;
@@ -568,11 +663,13 @@
 
     let uuid = ${JSON.stringify(initUUID)};
     let lastUUID = uuid, lastHTML = "";
+    let lastSearchQuery = "";
 
     async function load(force=false){
       await fetchCurrentUUID();
       if (!uuid) {
         tocEl.innerHTML = "<div class='empty'><em>[No note selected]</em></div>";
+        clearSearchState();
         lastUUID = null;
         lastHTML = "";
         return;
@@ -585,6 +682,7 @@
       const payload = await window.callAmplenotePlugin("outlineHtml", { uuid, maxOpenLevel: maxLevel });
       if (!payload || !payload.noteUUID) {
         tocEl.innerHTML = "<div class='empty'><em>[No note selected]</em></div>";
+        clearSearchState();
         lastUUID = null;
         lastHTML = "";
         return;
@@ -595,6 +693,7 @@
         tocEl.innerHTML = html;
 
         attachNavHandlers();
+        applySearch(searchInp.value, { keepScroll: true });
         applyOverflowMode();
   
         lastHTML = html;
@@ -637,6 +736,10 @@
     btn.addEventListener("click", debounce(() => load(true), 300));
     btnEx.addEventListener("click", expandAll);
     btnCl.addEventListener("click", collapseAll);
+    searchInp.addEventListener("input", debounce(() => {
+      applySearch(searchInp.value);
+      applyOverflowMode();
+    }, 120));
 
     const _pollHandle = setInterval(() => load(false), ${pollMs});
     window.addEventListener('unload', () => { clearInterval(_pollHandle); });
@@ -664,6 +767,67 @@
         await window.callAmplenotePlugin("navigateToHeading", { uuid, anchor });
       });
       tocEl._navBound = true;
+    }
+
+    function clearSearchState() {
+      tocEl.classList.remove("search-active");
+      tocEl.querySelectorAll(".search-match, .search-current, .search-ancestor").forEach((node) => {
+        node.classList.remove("search-match", "search-current", "search-ancestor");
+      });
+      tocEl.querySelectorAll("details[data-search-open='true']").forEach((detail) => {
+        detail.removeAttribute("open");
+        detail.removeAttribute("data-search-open");
+      });
+      searchStatusEl.textContent = "";
+    }
+
+    function applySearch(rawQuery, { keepScroll = false } = {}) {
+      if (!tocEl) return;
+
+      const previousQuery = lastSearchQuery;
+      clearSearchState();
+
+      const normalizedQuery = normalizeHeading(rawQuery);
+      lastSearchQuery = normalizedQuery;
+      if (!normalizedQuery) return;
+
+      const headings = Array.from(tocEl.querySelectorAll("summary, .leaf"));
+      const matches = [];
+
+      headings.forEach((heading) => {
+        const normalizedHeading = normalizeHeading(heading.dataset.heading || heading.textContent || "");
+        if (!fuzzyMatch(normalizedQuery, normalizedHeading)) return;
+
+        heading.classList.add("search-match");
+        matches.push(heading);
+
+        let ancestor = heading.closest("details");
+        while (ancestor) {
+          ancestor.classList.add("search-ancestor");
+          const summary = ancestor.querySelector(":scope > summary");
+          if (summary) summary.classList.add("search-ancestor");
+          if (!ancestor.hasAttribute("open")) {
+            ancestor.setAttribute("open", "");
+            ancestor.dataset.searchOpen = "true";
+          }
+          ancestor = ancestor.parentElement ? ancestor.parentElement.closest("details") : null;
+        }
+      });
+
+      tocEl.classList.add("search-active");
+      searchStatusEl.textContent = matches.length === 1 ? "1 match" : String(matches.length) + " matches";
+
+      if (!matches.length) {
+        searchStatusEl.textContent = "No matches";
+        return;
+      }
+
+      const [firstMatch] = matches;
+      firstMatch.classList.add("search-current");
+
+      if (!keepScroll || normalizedQuery !== previousQuery) {
+        firstMatch.scrollIntoView({ block: "nearest" });
+      }
     }
 
     /*

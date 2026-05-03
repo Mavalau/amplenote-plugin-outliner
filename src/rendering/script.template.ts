@@ -17,11 +17,33 @@ export function scriptTemplate({
     const btnEx  = document.getElementById("expandAll");
     const btnCl  = document.getElementById("collapseAll");
     const maxInp = document.getElementById("maxLevel");
+    const searchInp = document.getElementById("headingSearch");
+    const searchStatusEl = document.getElementById("searchStatus");
 
     /*
      * Utils
      */
     const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
+    const normalizeHeading = (value) =>
+      (value || "")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+
+    const fuzzyMatch = (query, target) => {
+      if (!query) return true;
+      if (!target) return false;
+      if (target.includes(query)) return true;
+
+      let qIndex = 0;
+      for (let tIndex = 0; tIndex < target.length && qIndex < query.length; tIndex += 1) {
+        if (target[tIndex] === query[qIndex]) qIndex += 1;
+      }
+      return qIndex === query.length;
+    };
 
     const debounce = (fn, ms=300) => {
       let t;
@@ -63,11 +85,13 @@ export function scriptTemplate({
 
     let uuid = ${JSON.stringify(initUUID)};
     let lastUUID = uuid, lastHTML = "";
+    let lastSearchQuery = "";
 
     async function load(force=false){
       await fetchCurrentUUID();
       if (!uuid) {
         tocEl.innerHTML = "<div class='empty'><em>[No note selected]</em></div>";
+        clearSearchState();
         lastUUID = null;
         lastHTML = "";
         return;
@@ -80,6 +104,7 @@ export function scriptTemplate({
       const payload = await window.callAmplenotePlugin("outlineHtml", { uuid, maxOpenLevel: maxLevel });
       if (!payload || !payload.noteUUID) {
         tocEl.innerHTML = "<div class='empty'><em>[No note selected]</em></div>";
+        clearSearchState();
         lastUUID = null;
         lastHTML = "";
         return;
@@ -90,6 +115,7 @@ export function scriptTemplate({
         tocEl.innerHTML = html;
 
         attachNavHandlers();
+        applySearch(searchInp.value, { keepScroll: true });
         applyOverflowMode();
   
         lastHTML = html;
@@ -132,6 +158,10 @@ export function scriptTemplate({
     btn.addEventListener("click", debounce(() => load(true), 300));
     btnEx.addEventListener("click", expandAll);
     btnCl.addEventListener("click", collapseAll);
+    searchInp.addEventListener("input", debounce(() => {
+      applySearch(searchInp.value);
+      applyOverflowMode();
+    }, 120));
 
     const _pollHandle = setInterval(() => load(false), ${pollMs});
     window.addEventListener('unload', () => { clearInterval(_pollHandle); });
@@ -159,6 +189,67 @@ export function scriptTemplate({
         await window.callAmplenotePlugin("navigateToHeading", { uuid, anchor });
       });
       tocEl._navBound = true;
+    }
+
+    function clearSearchState() {
+      tocEl.classList.remove("search-active");
+      tocEl.querySelectorAll(".search-match, .search-current, .search-ancestor").forEach((node) => {
+        node.classList.remove("search-match", "search-current", "search-ancestor");
+      });
+      tocEl.querySelectorAll("details[data-search-open='true']").forEach((detail) => {
+        detail.removeAttribute("open");
+        detail.removeAttribute("data-search-open");
+      });
+      searchStatusEl.textContent = "";
+    }
+
+    function applySearch(rawQuery, { keepScroll = false } = {}) {
+      if (!tocEl) return;
+
+      const previousQuery = lastSearchQuery;
+      clearSearchState();
+
+      const normalizedQuery = normalizeHeading(rawQuery);
+      lastSearchQuery = normalizedQuery;
+      if (!normalizedQuery) return;
+
+      const headings = Array.from(tocEl.querySelectorAll("summary, .leaf"));
+      const matches = [];
+
+      headings.forEach((heading) => {
+        const normalizedHeading = normalizeHeading(heading.dataset.heading || heading.textContent || "");
+        if (!fuzzyMatch(normalizedQuery, normalizedHeading)) return;
+
+        heading.classList.add("search-match");
+        matches.push(heading);
+
+        let ancestor = heading.closest("details");
+        while (ancestor) {
+          ancestor.classList.add("search-ancestor");
+          const summary = ancestor.querySelector(":scope > summary");
+          if (summary) summary.classList.add("search-ancestor");
+          if (!ancestor.hasAttribute("open")) {
+            ancestor.setAttribute("open", "");
+            ancestor.dataset.searchOpen = "true";
+          }
+          ancestor = ancestor.parentElement ? ancestor.parentElement.closest("details") : null;
+        }
+      });
+
+      tocEl.classList.add("search-active");
+      searchStatusEl.textContent = matches.length === 1 ? "1 match" : String(matches.length) + " matches";
+
+      if (!matches.length) {
+        searchStatusEl.textContent = "No matches";
+        return;
+      }
+
+      const [firstMatch] = matches;
+      firstMatch.classList.add("search-current");
+
+      if (!keepScroll || normalizedQuery !== previousQuery) {
+        firstMatch.scrollIntoView({ block: "nearest" });
+      }
     }
 
     /*
