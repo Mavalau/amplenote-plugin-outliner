@@ -24,6 +24,7 @@ More information on the [Plugin Note](https://public.amplenote.com/q7AbQNHyupxuK
 ## Development
 
 * `npm run build` (will also be executed as Github Action)
+* Use `npm run build:manual` to generate code to `/out` that can be pasted directly to an Amplenote Plugin-Notes' Code-Block
 
 ## Reference
 

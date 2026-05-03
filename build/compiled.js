@@ -886,5 +886,4 @@ ${script}`;
     renderEmbed
   };
   var plugin_default = plugin;
-  return plugin;
-})()
+})();
