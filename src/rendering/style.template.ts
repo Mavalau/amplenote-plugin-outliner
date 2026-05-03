@@ -50,15 +50,28 @@ export function styleTemplate() {
    Toolbar
 =================================== */
 .toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   position: sticky;
   top: 0;
   background: linear-gradient(var(--bg) 85%, transparent);
   z-index: 2;
   padding-bottom: 6px;
+}
+
+.toolbar-main {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.toolbar-search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
 }
 
 .left {
@@ -82,13 +95,34 @@ export function styleTemplate() {
   gap: 6px;
 }
 
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.search input,
 .maxlvl input {
-  width: 52px;
-  padding: 6px 8px;
   color: var(--fg);
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 6px;
+}
+
+.search input {
+  width: 100%;
+  padding: 6px 10px;
+}
+
+.search-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.maxlvl input {
+  width: 52px;
+  padding: 6px 8px;
 }
 
 .toggles {
@@ -99,6 +133,14 @@ export function styleTemplate() {
 .right {
   display: flex;
   gap: 6px;
+  align-items: center;
+}
+
+.search-status {
+  min-height: 1lh;
+  font-size: 13px;
+  color: var(--muted);
+  align-self: flex-end;
 }
 
 .btn {
@@ -148,8 +190,11 @@ export function styleTemplate() {
   position: relative;
   box-sizing: border-box;
   padding-left: var(--marker-w);
+  padding-right: 8px;
   user-select: none;
   font-size: inherit;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 #toc summary {
@@ -229,7 +274,20 @@ export function styleTemplate() {
 #toc .leaf:hover,
 #toc summary:hover {
   background: var(--hover);
-  border-radius: 6px;
+}
+
+#toc .search-match {
+  background: color-mix(in oklab, var(--hover) 55%, #facc15 45%);
+}
+
+#toc .search-match.search-current {
+  outline: 1px solid color-mix(in oklab, var(--fg) 35%, #f59e0b 65%);
+  outline-offset: 0;
+}
+
+#toc.search-active summary:not(.search-match):not(.search-ancestor),
+#toc.search-active .leaf:not(.search-match) {
+  opacity: 0.45;
 }
 `;
 }
